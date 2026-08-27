@@ -1,0 +1,51 @@
+name: Refresh Ticket UI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch Ticket Add UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace(
+              '.ticketImg img{width:100%;height:100%;object-fit:contain;display:block}',
+              '.ticketImg img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}'
+          )
+          s = s.replace(
+              '.manageActions{display:flex;gap:7px;margin-top:9px}',
+              '.manageActions{display:flex;gap:7px;margin-top:9px;width:100%}'
+          )
+          s = s.replace(
+              '.edit{background:#eee8ff;color:#5429d9}',
+              '.edit{background:#eee8ff;color:#5429d9;display:block!important;visibility:visible!important}'
+          )
+          s = s.replace(
+              '.delete{background:#fff0f0;color:#d34848}',
+              '.delete{background:#fff0f0;color:#d34848;display:block!important;visibility:visible!important}'
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit UI refresh and remove one-time workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git rm .github/workflows/refresh-ticket-ui.yml
+          git commit -m 'fix: refresh ticket add UI'
+          git push
