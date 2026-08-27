@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ticket Sales • New</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Myanmar",sans-serif;background:#f5f7fb;color:#172033}
+header{background:#fff;padding:18px 16px 12px;position:sticky;top:0;z-index:5;border-bottom:1px solid #e8ebf2}
+h1{font-size:21px;margin:0 0 4px}.sub{color:#697386;font-size:13px}
+main{max-width:760px;margin:auto;padding:16px 14px 90px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 5px 20px #1720330d;border:1px solid #edf0f5}
+label{display:block;font-size:13px;font-weight:700;margin:0 0 7px;color:#3d4759}
+input,select{width:100%;padding:13px 12px;border:1px solid #dfe4ec;border-radius:12px;font-size:16px;background:#fff;outline:none}
+input:focus,select:focus{border-color:#6574ff;box-shadow:0 0 0 3px #6574ff18}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
+button{border:0;border-radius:12px;padding:13px 15px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{background:#5865f2;color:white;width:100%;margin-top:14px}.secondary{background:#eef1f7;color:#263247}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#f7f8fc;border-radius:14px;padding:13px}.num{font-size:25px;font-weight:800}.lbl{font-size:12px;color:#697386}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.badge{font-size:12px;background:#eef1ff;color:#4d5be5;padding:5px 9px;border-radius:99px}
+.item{padding:13px 0;border-bottom:1px solid #edf0f5}.item:last-child{border-bottom:0}.meta{font-size:12px;color:#6d7788;margin-top:5px}.qty{font-size:19px;font-weight:800}
+.actions{display:flex;gap:7px;margin-top:9px}.actions button{padding:8px 10px;font-size:12px}
+.danger{background:#fff0f0;color:#d63b3b}.empty{text-align:center;color:#8a94a5;padding:25px 5px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e7eaf0;display:flex;justify-content:center;gap:8px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));z-index:10}
+nav button{background:transparent;color:#697386;font-size:12px;padding:7px 15px}nav button.active{color:#5865f2;background:#eef1ff}
+.view{display:none}.view.active{display:block}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>🎟️ Ticket Sales</h1><div class="sub">သီးသန့် Ticket Sales စာရင်း • Data အသစ်</div></header>
+<main>
+<section id="dashboard" class="view active">
+<div class="card"><div class="row"><b>Dashboard</b><span class="badge">NEW DATABASE</span></div><div class="stats" style="margin-top:13px">
+<div class="stat"><div class="num" id="sRecords">0</div><div class="lbl">စာရင်းများ</div></div>
+<div class="stat"><div class="num" id="sTickets">0</div><div class="lbl">လက်မှတ်စုစုပေါင်း</div></div>
+<div class="stat"><div class="num" id="sEvents">0</div><div class="lbl">Event နေရာများ</div></div>
+<div class="stat"><div class="num" id="sToday">0</div><div class="lbl">ယနေ့အရေအတွက်</div></div>
+</div></div>
+<div class="card"><b>နောက်ဆုံးစာရင်း</b><div id="recent"></div></div>
+</section>
+<section id="sales" class="view">
+<div class="card"><h2 style="font-size:18px;margin-top:0">➕ Ticket Sale ထည့်ရန်</h2>
+<form id="saleForm"><div class="grid">
+<div><label>📅 ရက်စွဲ</label><input id="date" type="date" required></div>
+<div><label>🎫 လက်မှတ်အမည်</label><input id="ticket" placeholder="ဥပမာ Entry Ticket" required></div>
+<div class="full"><label>🖼️ လက်မှတ်ပုံ</label>
+<input id="ticketImage" type="file" accept="image/*">
+<div id="imagePreview" style="display:none;margin-top:9px"><img id="previewImg" style="width:100%;max-height:180px;object-fit:contain;border-radius:12px;background:#f5f7fb;border:1px solid #e1e5ed"></div>
+</div>
+<div class="full"><label>📍 Event လုပ်တဲ့နေရာအမည်</label><input id="event" placeholder="ဥပမာ Pattaya Dinosaur Kingdom" required></div>
+<div><label>🔢 အရေအတွက်</label><input id="qty" type="number" min="1" step="1" placeholder="0" required></div>
+</div><button class="primary">💾 Save</button></form></div>
+</section>
+<section id="history" class="view">
+<div class="card"><div class="row"><b>📋 Sales History</b><button class="secondary" onclick="clearAll()">Clear All</button></div>
+<div style="margin-top:12px"><input id="search" placeholder="🔎 Event / Ticket / Date ရှာရန်" oninput="render()"></div>
+<div id="historyList"></div></div>
+</section>
+</main>
+<nav>
+<button class="active" onclick="show('dashboard',this)">🏠<br>Dashboard</button>
+<button onclick="show('sales',this)">🎟️<br>Sales</button>
+<button onclick="show('history',this)">📋<br>History</button>
+</nav>
+<script>
+const KEY="ticketSalesApp_NEW_V1_ONLY";
+let data=JSON.parse(localStorage.getItem(KEY)||"[]");
+const $=id=>document.getElementById(id);
+$("date").value=new Date().toISOString().slice(0,10);
+$("ticketImage").onchange=e=>{const f=e.target.files[0];if(!f){$("imagePreview").style.display="none";return}const r=new FileReader();r.onload=()=>{$("previewImg").src=r.result;$("imagePreview").style.display="block"};r.readAsDataURL(f)};
+$("saleForm").onsubmit=e=>{e.preventDefault();const f=$("ticketImage").files[0];const addRecord=(image="")=>{data.unshift({id:Date.now(),date:$("date").value,event:$("event").value.trim(),ticket:$("ticket").value.trim(),qty:Number($("qty").value),image});save();e.target.reset();$("date").value=new Date().toISOString().slice(0,10);$("qty").value="";$("imagePreview").style.display="none";$("previewImg").src="";alert("လက်မှတ်စာရင်း သိမ်းပြီးပါပြီ ✅");show("history",document.querySelectorAll("nav button")[2])};if(f){const r=new FileReader();r.onload=()=>addRecord(r.result);r.readAsDataURL(f)}else addRecord()};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function render(){const q=($("search")?.value||"").toLowerCase();const filtered=data.filter(x=>`${x.date} ${x.event} ${x.ticket}`.toLowerCase().includes(q));$("sRecords").textContent=data.length;$("sTickets").textContent=data.reduce((a,x)=>a+x.qty,0).toLocaleString();$("sEvents").textContent=new Set(data.map(x=>x.event)).size;const today=new Date().toISOString().slice(0,10);$("sToday").textContent=data.filter(x=>x.date===today).reduce((a,x)=>a+x.qty,0).toLocaleString();$("recent").innerHTML=data.slice(0,5).map(itemHTML).join("")||'<div class="empty">စာရင်းမရှိသေးပါ</div>';$("historyList").innerHTML=filtered.map(itemHTML).join("")||'<div class="empty">ရှာဖွေထားသော စာရင်းမရှိပါ</div>'}
+function itemHTML(x){return `<div class="item">${x.image?`<img src="${x.image}" style="width:100%;max-height:180px;object-fit:contain;border-radius:12px;background:#f5f7fb;border:1px solid #e1e5ed;margin-bottom:10px">`:''}<div class="row"><b>${esc(x.ticket)}</b><span class="qty">${x.qty.toLocaleString()}</span></div><div class="meta">📅 ${esc(x.date)} &nbsp; • &nbsp; 📍 ${esc(x.event)}</div><div class="actions"><button class="secondary" onclick="editItem(${x.id})">Edit</button><button class="danger" onclick="del(${x.id})">Delete</button></div></div>`}
+function del(id){if(confirm("ဒီစာရင်းကို ဖျက်မလား?")){data=data.filter(x=>x.id!==id);save()}}
+function editItem(id){let x=data.find(a=>a.id===id);let d=prompt("ရက်စွဲ",x.date);if(d===null)return;let ev=prompt("Event နေရာ",x.event);if(ev===null)return;let t=prompt("လက်မှတ်",x.ticket);if(t===null)return;let q=prompt("အရေအတွက်",x.qty);if(q===null||Number(q)<1)return;x.date=d;x.event=ev;x.ticket=t;x.qty=Number(q);save()}
+function clearAll(){if(data.length&&confirm("စာရင်းအားလုံး ဖျက်မလား?")){data=[];save()}}
+function show(id,btn){document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render()}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+render();
+</script>
+</body></html>
